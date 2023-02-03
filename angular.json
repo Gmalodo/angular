@@ -156,7 +156,11 @@
           "builder": "@nguniversal/builders:prerender",
           "options": {
             "routes": [
-              "/"
+              "/",
+              "/realisations",
+              "/a-propos",
+              "/contact",
+              "/services"
             ]
           },
           "configurations": {

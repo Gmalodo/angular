@@ -1,10 +1,11 @@
 import {
   Component, HostListener,
+  OnDestroy,
   OnInit,
   ViewEncapsulation
 } from '@angular/core';
 import {Router} from '@angular/router'
-import { getDocument, getWindow } from 'ssr-window';
+import { getDocument } from 'ssr-window';
 
 export interface character {
   val: string
@@ -17,31 +18,44 @@ export interface character {
   styleUrls: ['./terminal.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TerminalComponent implements OnInit {
+export class TerminalComponent implements OnInit, OnDestroy {
   terminalContent = new Map()
   private input: Element | undefined;
   private toggle = true
   private document: Document | undefined;
+  private toggleInterval: NodeJS.Timeout | undefined
 
   constructor(private router: Router) {}
 
-  ngOnInit(): void {
+  ngOnDestroy(): void {
+      clearInterval(this.toggleInterval)
+  }
+
+  async ngOnInit(): Promise<void> {
     this.document = getDocument()
-    this.showTerminalContent().then(() => {
-      setInterval(() => {
-        if (!this.input){
-          this.input = this.document!.querySelector(".terminal div:last-of-type p span:last-of-type")!;
-        }
-        else {
-          if (this.toggle)
-            this.input!.classList.toggle("hiddenInput");
-          else{
-            this.input!.classList.add("hiddenInput");
-            return
-          }
-        }
-      }, 750)
-    })
+    await this.addLine("<p><span class=\"green\">user@machine:</span><span class=\"blue\">~</span>$ </p>", 1)
+    await this.addLine("portfolio --config", 1, 150, 4, 1000)
+    await this.addLine(
+      "<p>Commands:</p>" +
+      "<div class='commandsList'>" +
+      "<div class='commands'>" +
+      "<p>home</p>" +
+      "<p>service</p>" +
+      "<p>project</p>" +
+      "<p>about</p>" +
+      "<p>sudo rm -rf /</p>" +
+      "</div>" +
+      "<div class='commandsDescription'>" +
+      "<p>Go to the home page</p>" +
+      "<p>Do you want a coffee?</p>" +
+      "<p>It's alright, view the matrix</p>" +
+      "<p>About me</p>" +
+      "<p>Please no !</p>" +
+      "</div>" +
+      "</div>", 2, 0, 0, 1000)
+    await this.addLine("<p><span class=\"green\">user@machine:</span><span class=\"blue\">~</span>$ <span class='input'></span></p>", 3, 0, 0, 1000)
+
+    this.input = this.document!.querySelector(".terminal div:last-of-type p span:last-of-type")!
   }
 
   private async addLine(text: string, line: number, writeSpeed:number = 0, writeAtEnd:number = 0, timeOut = 0): Promise<void>{
@@ -79,31 +93,6 @@ export class TerminalComponent implements OnInit {
       }, timeOut)
     })
     return await promise
-  }
-
-  private async showTerminalContent():Promise<void> {
-    await this.addLine("<p><span class=\"green\">user@machine:</span><span class=\"blue\">~</span>$ </p>", 1)
-    await this.addLine("portfolio --config", 1, 150, 4, 1000)
-    await this.addLine(
-      "<p>Commands:</p>" +
-      "<div class='commandsList'>" +
-      "<div class='commands'>" +
-      "<p>home</p>" +
-      "<p>service</p>" +
-      "<p>project</p>" +
-      "<p>about</p>" +
-      "<p>sudo rm -rf /</p>" +
-      "</div>" +
-      "<div class='commandsDescription'>" +
-      "<p>Go to the home page</p>" +
-      "<p>Do you want a coffee?</p>" +
-      "<p>It's alright, view the matrix</p>" +
-      "<p>About me</p>" +
-      "<p>Please no !</p>" +
-      "</div>" +
-      "</div>", 2, 0, 0, 1000)
-    await this.addLine("<p><span class=\"green\">user@machine:</span><span class=\"blue\">~</span>$ <span class='input'></span></p>", 3, 0, 0, 1000)
-    return
   }
 
  @HostListener('window:keydown', ['$event'])

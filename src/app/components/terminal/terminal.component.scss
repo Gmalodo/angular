@@ -89,6 +89,7 @@
           height: 1.3em;
           width: .5em;
           background-color: #E4E8E0;
+          animation: toggle 1.5s infinite;
         }
       }
     }
@@ -123,4 +124,11 @@
       }
     }
   }
+}
+
+@keyframes toggle {
+  0% { opacity: 0 }
+  49% { opacity: 0}
+  50% { opacity: 1}
+  100% { opacity: 1}
 }
